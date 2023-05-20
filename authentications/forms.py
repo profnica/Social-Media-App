@@ -22,8 +22,7 @@ class RegistrationForm(forms.Form):
                 raise forms.ValidationError("Password must contain at least 8 characters, including at least one letter, one number, and one symbol.")
 
     def save(self):
-        name = self.cleaned_data['name']
         email = self.cleaned_data['email']
         username = self.cleaned_data['username']
         password = self.cleaned_data['password']
-        User.objects.create_user(name=name, email=email, username=username, password=password)
+        User.objects.create_user(email=email, username=username, password=password)

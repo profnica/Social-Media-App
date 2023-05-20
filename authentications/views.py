@@ -7,11 +7,11 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('success')  # Replace 'success' with the name of your success page
+            return redirect('home')
     else:
         form = RegistrationForm()
 
-    return render(request, 'authentications/registeration.html', {'form': form})
+    return render(request, 'authentications/registration.html', {'form': form})
 
 
 def home(request):

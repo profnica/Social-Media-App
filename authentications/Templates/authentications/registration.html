@@ -1,14 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>User Registration</title>
-</head>
-<body>
-    <h1>User Registration</h1>
-    <form method="post"> 
+{% extends 'main.html'%}
+
+{% block content %}
+
+{% if form == 'Login' %}
+<div>
+    <form method="POST" action="">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
+        <label>Username:</label>
+        <input type="text" name="username" placeholder="Enter your username..." />
+    
+        <br>
+        <br>
+    
+        <label>Password:</label>
+        <input type="password" name="password" placeholder="Enter your password..." />
+    
+        <br>
+        <br>
+    
+        <input type="submit" value="Login" />
     </form>
-</body>
-</html>
+    <p> Haven't signed up yet?</p>
+    <a href="{% url 'register' %}">Sign up</a>
+</div>
+{% else %}
+
+{% comment %} for registration button {% endcomment %}
+<div>
+    <form method='POST' action=''>
+        {% csrf_token %}
+        {% comment %} to render out the userform from the view.py {% endcomment %}
+        {{form.as_p}}
+        <input type="submit" value="Create My Account"/>
+    </form> 
+    <p> Already signed up?</p>
+    <a href="{% url 'Login' %}">Login</a>
+</div> 
+
+{% endif %}
+
+
+{% comment %} social media authentication {% endcomment %}
+
+{% endblock content %}

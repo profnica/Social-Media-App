@@ -1,6 +1,6 @@
 <a href="/">
 
-    <h1>LOGO</h1>
+    <h1>DASHBOARD</h1>
 </a>
 
 <form method= "GET" action="{% url 'home' %}">
@@ -12,10 +12,10 @@
 {% if request.user.is_authenticated%}
 {% comment %} if the user is authenticated, show the below message {% endcomment %}
 <p>Hello {{request.user}}</p>
-{% comment %} <a href ={% url 'Logout'%}>Logout</a>
+<a href ={% url 'Logout'%}>Logout</a>
 
 {% else  %}
-<a href ={% url 'Login' %}>Login</a> {% endcomment %}
+<a href ={% url 'Login' %}>Login</a> 
  
 {% endif %}
 

@@ -1,4 +1,16 @@
-{% extends 'main.html' %}
+{% extends "main.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<h1>Dashboard</h1>
+
+<p>Welcome to your dashboard.</p>
+{% endblock %}
+
+
+{% comment %} {% extends 'main.html' %}
 
 {% block content %}
 <h1>Homepage</h1>
@@ -10,5 +22,5 @@
 <p>You are not logged in</p>
 <a href="{% url 'login' %}">Log In</a> {% endcomment %}
 
-{% endif %}
-{% endblock content %}
+{% comment %} {% endif %}
+{% endblock content %} {% endcomment %} 

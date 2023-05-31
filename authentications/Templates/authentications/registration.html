@@ -20,6 +20,14 @@
     
         <input type="submit" value="Login" />
     </form>
+    <div class="checkbox-container">
+        <input type="checkbox" id="RememberMe" name="RememberMe">
+        <label for ="RememberMe">Remember Me</label>
+
+        <br>
+
+        <a href="{% url 'forgetpassword' %}">Forget Password</a>
+    </div>
     <p> Haven't signed up yet?</p>
     <a href="{% url 'register' %}">Sign up</a>
 </div>
@@ -34,7 +42,7 @@
         <input type="submit" value="Create My Account"/>
     </form> 
     <p> Already signed up?</p>
-    <a href="{% url 'Login' %}">Login</a>
+    <a href="{% url 'login' %}">Login</a>
 </div> 
 
 {% endif %}

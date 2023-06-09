@@ -6,8 +6,8 @@
 <div>
     <form method="POST" action="">
         {% csrf_token %}
-        <label>Username:</label>
-        <input type="text" name="username" placeholder="Enter your username..." />
+        <label>Email:</label>
+        <input type="text" name="email" placeholder="Enter your Email..." />
     
         <br>
         <br>
@@ -39,10 +39,11 @@
         {% csrf_token %}
         {% comment %} to render out the userform from the view.py {% endcomment %}
         {{form.as_p}}
+        {{profile_form.as_p}}
         <input type="submit" value="Create My Account"/>
     </form> 
     <p> Already signed up?</p>
-    <a href="{% url 'login' %}">Login</a>
+    <a href="{% url 'Login' %}">Login</a>
 </div> 
 
 {% endif %}

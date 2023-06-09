@@ -1,34 +1,41 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponse
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from authentications.authentication import EmailAuthBackend
 from .forms import RegistrationForm
+from .forms import UserEditForm, ProfileEditForm
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.utils.encoding import force_bytes
 from django.contrib import messages, auth
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.forms import PasswordResetForm
 from django.core.mail import send_mail
 from django.urls import reverse
+from .models import Profile, CustomUser
 
+
+# User= get_user_model()
 
 def loginUser(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
+        email = request.POST.get('email')
         password = request.POST.get('password')
         
-        user = authenticate(request, username=username, password=password)
+        # Create an instance of the EmailAuthBackend
+        email_auth_backend = EmailAuthBackend()
+        
+        # authenticate user if the user exist in the db
+        user = email_auth_backend.authenticate(request, email=email, password=password)
         if user is not None:
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend' )
             return redirect('home')
         else:
             messages.error(request, 'Username or password does not exist')
-    
+            
+    # Create an instance of the LoginForm
     form = 'Login'  # Move this line outside the if-else block
     
     return render(request, 'authentications/registration.html', {'form': form})
@@ -40,36 +47,33 @@ def LogoutUser(request):
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            confirm_password = form.cleaned_data['confirm_password']
-
-            if password != confirm_password:
-                form.add_error('confirm_password', "Passwords do not match.")
-            else:
-                 # Create the new user
-                user = User.objects.create_user(username=username, password=password)
-                # authenticate new user to log in after sign up
-                user = authenticate(username=username, password=password)
-                # log in the user 
-                login(request, user)
-                # direct the user to homepage
-                return redirect('home')
+        profile_form = ProfileEditForm(request.POST)
+        if form.is_valid() and profile_form.is_valid():
+            
+            # to save user
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            
+            # to save user profile 
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+            
+            return render(request, 'authentications/register_done.html', {'form': form, 'profile_form': profile_form})
     else:
         form = RegistrationForm()
-
-    return render(request, 'authentications/registration.html', {'form': form})
-
+        profile_form = ProfileEditForm()
+    
+    return render(request, 'authentications/registration.html', {'form': form, 'profile_form': profile_form})
 
 def forgetpassword(request):
-    
     print("Inside forgetpassword view")  # Add this print statement
     if request.method == 'POST':
         email = request.POST['email']
         try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
             user = None
 
         if user:
@@ -79,7 +83,7 @@ def forgetpassword(request):
                 f'/reset-password/{uid}/{token}/'
             )
             subject = 'Reset Your Password'
-            message = render_to_string('authentications/reset_password_email.html', {
+            message = render_to_string('authentications/reset_password_email.html',{
                 'user': user,
                 'reset_url': reset_url,
             })
@@ -101,10 +105,10 @@ def reset_instruction(request):
 def RememberMe(request):  
     if request.method == 'POST':
         username = request.POST['username']
-        password = request.POST['password']
+        password1 = request.POST['password1']
         remember_me = request.POST.get('remember_me', False)
 
-        user = auth.authenticate(username=username, password=password)
+        user = auth.authenticate(username=username, password1=password1)
 
         if user:
             auth.login(request, user)
@@ -125,3 +129,35 @@ def home(request):
 
 def dashboard(request):
     return render(request,'authentications/dashboard.html')
+
+# to allow user alone to edit their profile, we will use decorator
+# Edit view
+@login_required
+def edit(request):
+    if request.method == 'POST':
+        user_form = UserEditForm(request.POST, instance=request.user)
+        if hasattr(request.user, 'profile'):
+            profile_form = ProfileEditForm(request.POST, request.FILES, instance=request.user.profile)
+        else:
+            profile = Profile.objects.create(user=request.user)
+            profile_form = ProfileEditForm(request.POST, request.FILES, instance=profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Profile updated successfully')
+            return redirect('home')
+        else:
+            messages.error(request, 'Error updating your profile')
+    else:
+        user_form = UserEditForm(instance=request.user)
+        if hasattr(request.user, 'profile'):
+            profile_form = ProfileEditForm(instance=request.user.profile)
+        else:
+            profile = Profile.objects.create(user=request.user)
+            profile_form = ProfileEditForm(instance=profile)
+
+    return render(request, 'authentications/edit.html', {
+        'user_form': user_form,
+        'profile_form': profile_form
+    })

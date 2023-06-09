@@ -11,7 +11,7 @@ urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('forgetpassword/', views.forgetpassword, name='forgetpassword'),
     path('reset-instruction/', views.reset_instruction, name='reset-instruction'),
-    
+    path('edit/', views.edit, name='edit'),
     
     # for users to change their password
     path('password-change/',PasswordChangeView.as_view(),name='password_change'),
